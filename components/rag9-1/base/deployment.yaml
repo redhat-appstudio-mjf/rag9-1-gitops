@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:  
+    tad.gitops.set/image: ".spec.template.spec.containers[0].image"
+    tad.gitops.get/image: ".spec.template.spec.containers[0].image"
+    tad.gitops.set/replicas: ".spec.replicas"
+    tad.gitops.get/replicas: ".spec.replicas" 
+  labels: 
+    app.kubernetes.io/instance: rag9-1
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name:  rag9-1
+    app.kubernetes.io/part-of: rag9-1  
+  name: rag9-1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance:  rag9-1 
+  template:
+    metadata: 
+      labels:
+        app.kubernetes.io/instance:  rag9-1
+    spec:
+      containers:
+      - env:
+        - name: MODEL_ENDPOINT
+          value: http://rag9-1-model-server:8001
+        image:  quay.io/redhat-ai-dev/ai-template-bootstrap-app:latest
+        name: app-inference
+        ports:
+        - containerPort: 8501
+        securityContext:
+          runAsNonRoot: true
+      - image: quay.io/maysunfaisal/chroma-uid:latest
+        name: vectordb
+        ports:
+        - containerPort: 8000
+        securityContext:
+          runAsNonRoot: true
